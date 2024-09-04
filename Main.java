@@ -8,15 +8,15 @@ import java.util.Random;
 public class Main {
 
     static String[] boardArray = {
-        "AB", "", "", "", "+2", "", "-4", "", "", "",
-        "", "-2", "", "", "+3", "", "", "", "-3", "",
-        "-5", "", "", "+2", "", "", "", "-4", "", "",
-        "", "", "-6", "", "", "+4", "", "", "", "",
-        "", "", "", "", "-7", "", "+5", "", "", "E",
+            "AB", "", "", "", "+3",
+            "", "-4", "", "", "+3",
+            "", "", "", "+2", "",
+            "", "", "-6", "", "",
+            "", "", "", "", "E",
     };
 
     static int current_player = 0;
-    static int[] player_positions = {0, 0};
+    static int[] player_positions = { 0, 0 };
 
     static int roll_dice() {
         Random random = new Random();
@@ -28,47 +28,70 @@ public class Main {
 
     static void update_board(JPanel boardPanel) {
         Component[] components = boardPanel.getComponents();
-        
+
         for (int i = 0; i < boardArray.length; i++) {
             boardArray[i] = "";
         }
-        boardArray[4] = "+2";
+        boardArray[4] = "+3";
         boardArray[6] = "-4";
-        boardArray[10] = "-2";
-        boardArray[14] = "+3";
-        boardArray[18] = "-3";
-        boardArray[20] = "-5";
-        boardArray[23] = "+2";
-        boardArray[27] = "-4";
-        boardArray[32] = "-6";
-        boardArray[35] = "+4";
-        boardArray[44] = "-7";
-        boardArray[46] = "+5";
-        boardArray[boardArray.length - 1] = "E"; 
-    
+        boardArray[9] = "+3";
+        boardArray[13] = "+2";
+        boardArray[17] = "-6";
+        boardArray[boardArray.length - 1] = "E";
+
         if (player_positions[0] < boardArray.length) {
             boardArray[player_positions[0]] += "A";
         }
         if (player_positions[1] < boardArray.length) {
             boardArray[player_positions[1]] += "B";
         }
-    
+
         for (int i = 0; i < components.length; i++) {
             JLabel cellLabel = (JLabel) components[i];
-            cellLabel.setText(boardArray[i]);
+            String cellText = boardArray[i];
+
+            cellLabel.setText(cellText);
+
+            if (boardArray[i].contains("+")) {
+                cellLabel.setBackground(Color.GREEN);
+            } else if (boardArray[i].contains("-")) {
+                cellLabel.setBackground(Color.ORANGE);
+            } else {
+                cellLabel.setBackground(Color.WHITE);
+            }
+            // Set player colors
+            if (cellText.contains("A")) {
+                cellLabel.setForeground(Color.BLUE); // Player A color
+            } else if (cellText.contains("B")) {
+                cellLabel.setForeground(Color.ORANGE); // Player B color
+            } else {
+                cellLabel.setForeground(Color.BLACK); // Default color
+            }
+
+            // Set font size for player symbols
+            if (cellText.contains("A") || cellText.contains("B")) {
+                cellLabel.setFont(new Font("Arial", Font.BOLD, 20)); // Adjust font size here
+            } else {
+                cellLabel.setFont(new Font("Arial", Font.PLAIN, 12)); // Default font size for other texts
+            }
+
+            cellLabel.setOpaque(true);
         }
     }
-    static void restart_game(JPanel boardPanel, JLabel currentPlayerLabel, JLabel diceResultLabel, JButton rollDiceButton) {
+
+    static void restart_game(JPanel boardPanel, JLabel currentPlayerLabel, JLabel diceResultLabel,
+            JButton rollDiceButton) {
         current_player = 0;
         player_positions[0] = 0;
         player_positions[1] = 0;
-        
+
         update_board(boardPanel);
 
         currentPlayerLabel.setText("Player A's Turn");
         diceResultLabel.setText("");
         rollDiceButton.setEnabled(true);
     }
+
     public static void main(String[] args) {
         // Creating a frame
         JFrame frame = new JFrame("Snake & Ladder Game");
@@ -78,7 +101,7 @@ public class Main {
 
         // Adding board
         JPanel boardPanel = new JPanel();
-        boardPanel.setLayout(new GridLayout(10, 10));
+        boardPanel.setLayout(new GridLayout(5, 5));
         Border cellBorder = BorderFactory.createLineBorder(Color.BLACK);
 
         for (String cellContent : boardArray) {
@@ -87,12 +110,14 @@ public class Main {
             cellLabel.setVerticalAlignment(SwingConstants.CENTER);
             cellLabel.setBorder(cellBorder);
 
-            int cellSize = 50; 
+            int cellSize = 50;
             cellLabel.setPreferredSize(new Dimension(cellSize, cellSize));
             boardPanel.add(cellLabel);
         }
 
         frame.add(boardPanel, BorderLayout.CENTER);
+
+        
 
         // Adding buttons
         JPanel buttonPanel = new JPanel();
@@ -102,7 +127,7 @@ public class Main {
         JLabel diceResultLabel = new JLabel();
         JButton rollDiceButton = new JButton("Roll Dice");
         JButton restartBtn = new JButton("Restart");
-        
+
         currentPlayerLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         diceResultLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         rollDiceButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -110,34 +135,39 @@ public class Main {
         restartBtn.setForeground(Color.WHITE);
         restartBtn.setBackground(Color.RED);
 
-
-
         rollDiceButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int diceResult = roll_dice();
-                int new_player_position = player_positions[current_player] + diceResult; 
+                int new_player_position = player_positions[current_player] + diceResult;
 
                 String message = "You rolled a " + diceResult;
 
                 // Checking for special cells
                 if (new_player_position < boardArray.length) {
                     switch (new_player_position) {
-                        case 4:  new_player_position += 2; message += " You got a small boost of +2"; break;
-                        case 6:  new_player_position -= 4; message += " Bummer! You go back -4"; break;
-                        case 10: new_player_position -= 2; message += " Bummer! You go back -2"; break;
-                        case 14: new_player_position += 3; message += " Nice! You move ahead +3"; break;
-                        case 18: new_player_position -= 3; message += " Bummer! You go back -3"; break;
-                        case 20: new_player_position -= 5; message += " Bummer! You go back -5"; break;
-                        case 23: new_player_position += 2; message += " Nice! You move ahead +2"; break;
-                        case 27: new_player_position -= 4; message += " Bummer! You go back -4"; break;
-                        case 32: new_player_position -= 6; message += " Bummer! You go back -6"; break;
-                        case 35: new_player_position += 4; message += " Nice! You move ahead +4"; break;
-                        case 44: new_player_position -= 7; message += " Bummer! You go back -7"; break;
-                        case 46: new_player_position += 5; message += " Nice! You move ahead +5"; break;
+                        case 4:
+                            new_player_position += 3;
+                            message += " You got a small boost of +2";
+                            break;
+                        case 6:
+                            new_player_position -= 4;
+                            message += " Bummer! You go back -4";
+                            break;
+                        case 9:
+                            new_player_position += 3;
+                            message += " Bummer! You move ahead +3";
+                            break;
+                        case 13:
+                            new_player_position += 2;
+                            message += " Nice! You move ahead +2";
+                            break;
+                        case 17:
+                            new_player_position -= 6;
+                            message += " Bummer! You go back -6";
+                            break;
                     }
                 }
-
 
                 if (new_player_position >= boardArray.length) {
                     message = "You rolled too high " + diceResult;
@@ -147,7 +177,7 @@ public class Main {
                     if (player_positions[current_player] == boardArray.length - 1) {
                         update_board(boardPanel);
                         message = "Player " + (current_player == 0 ? "A" : "B") + " wins!";
-                        rollDiceButton.setEnabled(false); 
+                        rollDiceButton.setEnabled(false);
                     }
                 }
 
@@ -174,13 +204,13 @@ public class Main {
         buttonPanel.add(restartBtn);
         buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        frame.pack();
+        // frame.pack();
         frame.add(buttonPanel, BorderLayout.SOUTH);
         frame.setVisible(true);
+        update_board(boardPanel);
     }
 
 }
-
 
 // Fix errors with snake
 // Add color to player and snakes and ladders
